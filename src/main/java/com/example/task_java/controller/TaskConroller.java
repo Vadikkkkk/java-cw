@@ -56,4 +56,24 @@ public class TaskConroller {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage(), e);
         }
     }
+
+    @GetMapping("/pending")
+    public ResponseEntity<List<Task>> getPendingUserTasks(@PathVariable Long userId) {
+        try {
+            List<Task> tasks = taskService.getPendingTasksByUserId(userId);
+            return ResponseEntity.ok(tasks);
+        } catch (RecordNotFoundException e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage(), e);
+        }
+    }
+
+    @DeleteMapping("/delete/{taskId}")
+    public ResponseEntity<Void> softDeleteTask(@PathVariable Long userId, @PathVariable Long taskId) {
+        try {
+            taskService.deleteTask(userId, taskId);
+            return ResponseEntity.noContent().build();
+        } catch (RecordNotFoundException e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage(), e);
+        }
+    }
 }
