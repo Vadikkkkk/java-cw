@@ -1,6 +1,6 @@
 package com.example.task_java.repository.implementations;
 
-import com.example.task_java.exception.DuplicateRecordException;
+import com.example.task_java.exception.DoubleRecordException;
 import com.example.task_java.model.User;
 import com.example.task_java.repository.UserRep;
 import org.springframework.stereotype.Repository;
@@ -28,7 +28,7 @@ public class UserRepImplementation implements UserRep {
         }
 
         if (existsByEmail(user.getEmail())) {
-            throw new DuplicateRecordException(
+            throw new DoubleRecordException(
                     "User with this email already exists.");
         }
         user.setUserId(idCounter.incrementAndGet());
