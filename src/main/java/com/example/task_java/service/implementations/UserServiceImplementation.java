@@ -1,6 +1,6 @@
 package com.example.task_java.service.implementations;
 
-import com.example.task_java.exception.DuplicateRecordException;
+import com.example.task_java.exception.DoubleRecordException;
 import com.example.task_java.exception.RecordNotFoundException;
 import com.example.task_java.model.User;
 import com.example.task_java.repository.UserRep;
@@ -23,7 +23,7 @@ public class UserServiceImplementation  implements UserService{
     }
 
     @Override
-    public User registerUser(User user) throws DuplicateRecordException {
+    public User registerUser(User user) throws DoubleRecordException {
         if (user == null) {
             throw new IllegalArgumentException("Invalid user! Can't be null");
         }

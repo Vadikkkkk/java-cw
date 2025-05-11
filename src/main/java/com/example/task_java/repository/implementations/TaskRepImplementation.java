@@ -1,6 +1,6 @@
 package com.example.task_java.repository.implementations;
 
-import com.example.task_java.exception.DuplicateRecordException;
+import com.example.task_java.exception.DoubleRecordException;
 import com.example.task_java.model.Task;
 import com.example.task_java.repository.TaskRep;
 import org.springframework.stereotype.Repository;
@@ -13,17 +13,12 @@ import java.util.stream.Collectors;
 
 @Repository
 public class TaskRepImplementation implements TaskRep {
+
     private final List<Task> tasks = new ArrayList<>();
     private static final AtomicLong idCounter = new AtomicLong();
 
     @Override
-    public List<Task> findAllTasks() {
-        return List.copyOf(tasks.stream()
-                .filter(task -> !task.getIsDeleted()).collect(Collectors.toList()));
-    }
-
-    @Override
-    public Task saveTask(Task task) throws DuplicateRecordException {
+    public Task saveTask(Task task) throws DoubleRecordException {
         if (task == null) {
             throw new IllegalArgumentException("Invalid Task!");
         }
@@ -59,12 +54,6 @@ public class TaskRepImplementation implements TaskRep {
                 .filter(task -> task.getUserId().equals(userId)
                         && !task.getIsDeleted())
                 .toList();
-    }
-
-    @Override
-    public boolean existsById(Long taskId) {
-        return tasks.stream()
-                .anyMatch(t -> t.getTaskId().equals(taskId) && !t.getIsDeleted());
     }
 
     @Override

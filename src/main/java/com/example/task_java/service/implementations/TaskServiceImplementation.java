@@ -1,14 +1,17 @@
 package com.example.task_java.service.implementations;
 
-import com.example.task_java.exception.DuplicateRecordException;
+import com.example.task_java.exception.DoubleRecordException;
 import com.example.task_java.exception.RecordNotFoundException;
+import com.example.task_java.model.Notification;
 import com.example.task_java.model.Task;
 import com.example.task_java.repository.TaskRep;
 import com.example.task_java.repository.UserRep;
+import com.example.task_java.service.NotificationService;
 import com.example.task_java.service.TaskService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -19,11 +22,7 @@ public class TaskServiceImplementation implements TaskService {
 
     private final TaskRep taskRep;
     private final UserRep userRep;
-
-    @Override
-    public List<Task> findAllTasks() throws RecordNotFoundException {
-        return taskRep.findAllTasks();
-    }
+    private final NotificationService notificationService;
 
     private void checkUserExists(Long userId) throws RecordNotFoundException {
         if (!userRep.existsById(userId)) {
@@ -57,7 +56,7 @@ public class TaskServiceImplementation implements TaskService {
     }
 
     @Override
-    public Task createForUserId(long userId, Task task) throws RecordNotFoundException, DuplicateRecordException {
+    public Task createForUserId(long userId, Task task) throws RecordNotFoundException, DoubleRecordException {
         checkUserExists(userId);
         if (task == null || task.getTaskText().isBlank()) {
             throw new IllegalArgumentException("Invalid Task.");
@@ -65,6 +64,14 @@ public class TaskServiceImplementation implements TaskService {
         task.setIsComplete(false);
         task.setIsDeleted(false);
         Task createdTask = taskRep.saveTask(task);
+        notificationService.addNotification(new Notification(//уведомление о создании задачи
+                null,
+                task.getTaskId(),
+                userId,
+                "Задача '" + createdTask.getTaskText() + "' создана.",
+                LocalDateTime.now(),
+                false
+        ));
         return createdTask;
     }
 
@@ -74,22 +81,5 @@ public class TaskServiceImplementation implements TaskService {
         Task task = findById(userId, taskId);
         task.setIsDeleted(true);
         taskRep.updateTask(task);
-    }
-
-    @Override
-    public Task markAsCompleted(long userId, long taskId) throws RecordNotFoundException {
-        checkUserExists(userId);
-        Task task = findById(userId, taskId);
-        task.setIsComplete(true);
-        return taskRep.updateTask(task);
-    }
-
-    @Override
-    public Task updateTask(long userId, long taskId, Task task) throws RecordNotFoundException {
-        checkUserExists(userId);
-        Task oldTask = findById(userId, taskId);
-        oldTask.setTaskText(task.getTaskText());
-        oldTask.setTargetDate(task.getTargetDate());
-        return taskRep.updateTask(oldTask);
     }
 }

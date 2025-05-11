@@ -1,7 +1,7 @@
 package com.example.task_java.controller;
 
 import com.example.task_java.dto.TaskRequest;
-import com.example.task_java.exception.DuplicateRecordException;
+import com.example.task_java.exception.DoubleRecordException;
 import com.example.task_java.exception.RecordNotFoundException;
 import com.example.task_java.model.Task;
 import com.example.task_java.service.TaskService;
@@ -50,7 +50,7 @@ public class TaskConroller {
 
         } catch (RecordNotFoundException e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage(), e);
-        } catch (DuplicateRecordException e) {
+        } catch (DoubleRecordException e) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, e.getMessage(), e);
         } catch (IllegalArgumentException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage(), e);
