@@ -1,8 +1,10 @@
 package com.example.task_java.repository.implementations;
 
 import com.example.task_java.exception.DoubleRecordException;
+import com.example.task_java.exception.RecordNotFoundException;
 import com.example.task_java.model.User;
 import com.example.task_java.repository.UserRep;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
@@ -11,23 +13,24 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 
 @Repository
+@Profile("inmemory")
 public class UserRepImplementation implements UserRep {
 
     private final List<User> users = new ArrayList<>();
     private static final AtomicLong idCounter = new AtomicLong();
 
     @Override
-    public List<User> findAllUsers() {
+    public List<User> findAll() {
         return List.copyOf(users);
     }
 
     @Override
-    public User saveUser(User user) {
+    public User save(User user) {
         if (user == null) {
             throw new IllegalArgumentException("User can't be null");
         }
 
-        if (existsByEmail(user.getEmail())) {
+        if (existsByEmailIgnoreCase(user.getEmail())) {
             throw new DoubleRecordException(
                     "User with this email already exists.");
         }
@@ -37,15 +40,18 @@ public class UserRepImplementation implements UserRep {
     }
 
     @Override
-    public Optional<User> findUserById(Long userId) {
+    public Optional<User> findById(Long userId) {
         return users.stream()
                 .filter(user -> user.getUserId().equals(userId))
                 .findFirst();
     }
 
     @Override
-    public boolean deleteUser(long userId) {
-        return users.removeIf(user -> user.getUserId() == userId);
+    public void deleteById(long userId) {
+        boolean removed = users.removeIf(user -> user.getUserId().equals(userId));
+        if (!removed) {
+            throw new RecordNotFoundException("User with id " + userId + " not found");
+        }
     }
 
     @Override
@@ -55,13 +61,13 @@ public class UserRepImplementation implements UserRep {
     }
 
     @Override
-    public boolean existsByEmail(String email) {
+    public boolean existsByEmailIgnoreCase(String email) {
         return users.stream()
                 .anyMatch(user -> user.getEmail().equalsIgnoreCase(email));
     }
 
     @Override
-    public Optional<User> findByEmail(String email) {
+    public Optional<User> findByEmailIgnoreCase(String email) {
         return users.stream()
                 .filter(user -> user.getEmail().equalsIgnoreCase(email))
                 .findFirst();

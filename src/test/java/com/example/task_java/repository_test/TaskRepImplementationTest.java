@@ -34,23 +34,23 @@ class TaskRepImplementationTest {
     // Позитивные тесты
 
     @Test
-    void saveTask_NewTask_AssignsIdAndSaves() throws DoubleRecordException {
-        Task saved = taskRepo.saveTask(sampleTask);
+    void saveTask_New_AssignsIdAndSaves() throws DoubleRecordException {
+        Task saved = taskRepo.save(sampleTask);
         assertNotNull(saved.getTaskId());
-        assertEquals(1, taskRepo.findTasksByUserId(1L).size());
+        assertEquals(1, taskRepo.findByUserId(1L).size());
     }
 
     @Test
-    void findTaskById_FindsSavedTask() throws DoubleRecordException {
-        Task saved = taskRepo.saveTask(sampleTask);
-        Optional<Task> found = taskRepo.findTaskById(saved.getTaskId());
+    void findTaskById_FindsSaved() throws DoubleRecordException {
+        Task saved = taskRepo.save(sampleTask);
+        Optional<Task> found = taskRepo.findById(saved.getTaskId());
         assertTrue(found.isPresent());
         assertEquals(saved.getTaskText(), found.get().getTaskText());
     }
 
     @Test
-    void findTasksByUserId_ReturnsOnlyUserTasks() throws DoubleRecordException {
-        Task t1 = taskRepo.saveTask(sampleTask);
+    void findTasksByUserId_ReturnsOnlyUser() throws DoubleRecordException {
+        Task t1 = taskRepo.save(sampleTask);
         Task t2 = Task.builder()
                 .userId(2L)
                 .taskText("Other user task")
@@ -58,15 +58,15 @@ class TaskRepImplementationTest {
                 .targetDate(LocalDateTime.now().plusDays(2))
                 .isDeleted(false)
                 .build();
-        taskRepo.saveTask(t2);
+        taskRepo.save(t2);
 
-        assertEquals(1, taskRepo.findTasksByUserId(1L).size());
-        assertEquals(1, taskRepo.findTasksByUserId(2L).size());
+        assertEquals(1, taskRepo.findByUserId(1L).size());
+        assertEquals(1, taskRepo.findByUserId(2L).size());
     }
 
     @Test
     void updateTask_ExistingTask_UpdatesSuccessfully() throws DoubleRecordException {
-        Task saved = taskRepo.saveTask(sampleTask);
+        Task saved = taskRepo.save(sampleTask);
         Task updated = Task.builder()
                 .taskId(saved.getTaskId())
                 .userId(saved.getUserId())
@@ -78,21 +78,21 @@ class TaskRepImplementationTest {
 
         Task result = taskRepo.updateTask(updated);
         assertEquals("Updated text", result.getTaskText());
-        assertEquals(1, taskRepo.findTasksByUserId(saved.getUserId()).size());
+        assertEquals(1, taskRepo.findByUserId(saved.getUserId()).size());
     }
 
     // Негативные тесты
 
     @Test
-    void saveTask_NullTask_ThrowsIllegalArgumentException() {
+    void saveTask_Null_ThrowsIllegalArgumentException() {
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> {
-            taskRepo.saveTask(null);
+            taskRepo.save(null);
         });
         assertEquals("Invalid Task!", ex.getMessage());
     }
 
     @Test
-    void saveTask_UpdateNonExistingTask_ThrowsIllegalArgumentException() {
+    void saveTask_UpdateNonExisting_ThrowsIllegalArgumentException() {
         Task taskWithId = Task.builder()
                 .taskId(999L)
                 .userId(1L)
@@ -103,7 +103,7 @@ class TaskRepImplementationTest {
                 .build();
 
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> {
-            taskRepo.saveTask(taskWithId);
+            taskRepo.save(taskWithId);
         });
         assertTrue(ex.getMessage().contains("doesn't exists"));
     }

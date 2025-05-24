@@ -9,6 +9,7 @@ import com.example.task_java.repository.UserRep;
 import com.example.task_java.service.NotificationService;
 import com.example.task_java.service.TaskService;
 import lombok.AllArgsConstructor;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -34,7 +35,7 @@ public class TaskServiceImplementation implements TaskService {
     @Override
     public Task findById(long userId, long taskId) throws RecordNotFoundException {
         checkUserExists(userId);//првоеряем существует ли пользователь
-        return taskRep.findTaskById(taskId)
+        return taskRep.findById(taskId)
                 .filter(task -> task.getUserId().equals(userId) && !task.getIsDeleted())
                 .orElseThrow(() -> new RecordNotFoundException("Task " + taskId + " not found."));
     }
@@ -42,7 +43,7 @@ public class TaskServiceImplementation implements TaskService {
     @Override
     public List<Task> getAllByUserId(long userId) throws RecordNotFoundException {
         checkUserExists(userId);
-        return taskRep.findTasksByUserId(userId).stream()
+        return taskRep.findByUserId(userId).stream()
                 .filter(task -> !task.getIsDeleted())
                 .collect(Collectors.toList());
     }
@@ -50,7 +51,7 @@ public class TaskServiceImplementation implements TaskService {
     @Override
     public List<Task> getPendingTasksByUserId(long userId) throws RecordNotFoundException {
         checkUserExists(userId);
-        return taskRep.findTasksByUserId(userId).stream()
+        return taskRep.findByUserId(userId).stream()
                 .filter(task -> !task.getIsDeleted() && !task.getIsComplete())
                 .collect(Collectors.toList());
     }
@@ -63,7 +64,7 @@ public class TaskServiceImplementation implements TaskService {
         }
         task.setIsComplete(false);
         task.setIsDeleted(false);
-        Task createdTask = taskRep.saveTask(task);
+        Task createdTask = taskRep.save(task);
         notificationService.addNotification(new Notification(//уведомление о создании задачи
                 null,
                 task.getTaskId(),
@@ -80,6 +81,6 @@ public class TaskServiceImplementation implements TaskService {
         checkUserExists(userId);
         Task task = findById(userId, taskId);
         task.setIsDeleted(true);
-        taskRep.updateTask(task);
+        taskRep.save(task);
     }
 }

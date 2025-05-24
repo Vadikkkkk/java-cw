@@ -6,6 +6,7 @@ import com.example.task_java.model.User;
 import com.example.task_java.repository.UserRep;
 import com.example.task_java.service.UserService;
 import lombok.AllArgsConstructor;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -19,7 +20,7 @@ public class UserServiceImplementation  implements UserService{
 
     @Override
     public List<User> findAllUsers() {
-        return userRep.findAllUsers();
+        return userRep.findAll();
     }
 
     @Override
@@ -27,19 +28,19 @@ public class UserServiceImplementation  implements UserService{
         if (user == null) {
             throw new IllegalArgumentException("Invalid user! Can't be null");
         }
-        return userRep.saveUser(user);
+        return userRep.save(user);
     }
 
     @Override
     public User findUserById(long userId) throws RecordNotFoundException {
-        return userRep.findUserById(userId)
+        return userRep.findById(userId)
                 .orElseThrow(() -> new RecordNotFoundException(
                         "User " + userId + " not found"));
     }
 
     @Override
     public User loginUser(String email) throws RecordNotFoundException {
-        return userRep.findByEmail(email)
+        return userRep.findByEmailIgnoreCase(email)
                 .orElseThrow(() -> new RecordNotFoundException(
                         "User with email '" + email + "' not found."));
     }
@@ -50,7 +51,7 @@ public class UserServiceImplementation  implements UserService{
             throw new RecordNotFoundException(
                     "User with id " + userId + " not found");
         }
-        boolean isDeleted = userRep.deleteUser(userId);
+        userRep.deleteById(userId);
     }
 
 }

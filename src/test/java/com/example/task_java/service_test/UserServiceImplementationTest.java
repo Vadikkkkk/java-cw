@@ -39,59 +39,72 @@ class UserServiceImplementationTest {
 
     @Test
     void findAllUsers_ReturnsListOfUsers() {
-        when(userRep.findAllUsers()).thenReturn(List.of(sampleUser));
+        when(userRep.findAll()).thenReturn(List.of(sampleUser));
 
         List<User> users = userService.findAllUsers();
 
         assertNotNull(users);
         assertEquals(1, users.size());
         assertEquals("test@example.com", users.get(0).getEmail());
-        verify(userRep, times(1)).findAllUsers();
+        verify(userRep, times(1)).findAll();
     }
 
     @Test
     void registerUser_ValidUser_SavesAndReturnsUser() throws DoubleRecordException {
-        when(userRep.saveUser(sampleUser)).thenReturn(sampleUser);
+        when(userRep.save(sampleUser)).thenReturn(sampleUser);
 
         User registered = userService.registerUser(sampleUser);
 
         assertNotNull(registered);
         assertEquals(sampleUser.getUserId(), registered.getUserId());
-        verify(userRep, times(1)).saveUser(sampleUser);
+        verify(userRep, times(1)).save(sampleUser);
     }
 
     @Test
     void findUserById_ExistingUser_ReturnsUser() throws RecordNotFoundException {
-        when(userRep.findUserById(1L)).thenReturn(Optional.of(sampleUser));
+        when(userRep.findById(1L)).thenReturn(Optional.of(sampleUser));
 
         User found = userService.findUserById(1L);
 
         assertNotNull(found);
         assertEquals(1L, found.getUserId());
-        verify(userRep, times(1)).findUserById(1L);
+        verify(userRep, times(1)).findById(1L);
     }
 
     @Test
     void loginUser_ExistingEmail_ReturnsUser() throws RecordNotFoundException {
-        when(userRep.findByEmail("test@example.com")).thenReturn(Optional.of(sampleUser));
+        when(userRep.findByEmailIgnoreCase("test@example.com")).thenReturn(Optional.of(sampleUser));
 
         User loggedIn = userService.loginUser("test@example.com");
 
         assertNotNull(loggedIn);
         assertEquals("test@example.com", loggedIn.getEmail());
-        verify(userRep, times(1)).findByEmail("test@example.com");
+        verify(userRep, times(1)).findByEmailIgnoreCase("test@example.com");
     }
+
+//    @Test
+//    void deleteUser_ExistingUser_DeletesSuccessfully() {
+//        when(userRep.existsById(1L)).thenReturn(true);
+//        when(userRep.deleteById(1L)).thenReturn(true);
+//
+//        assertDoesNotThrow(() -> userService.deleteUser(1L));
+//
+//        verify(userRep, times(1)).existsById(1L);
+//        verify(userRep, times(1)).deleteById(1L);
+//    }
 
     @Test
     void deleteUser_ExistingUser_DeletesSuccessfully() {
         when(userRep.existsById(1L)).thenReturn(true);
-        when(userRep.deleteUser(1L)).thenReturn(true);
+        // deleteById - void метод, можно не мокать, но лучше сделать doNothing()
+        doNothing().when(userRep).deleteById(1L);
 
         assertDoesNotThrow(() -> userService.deleteUser(1L));
 
         verify(userRep, times(1)).existsById(1L);
-        verify(userRep, times(1)).deleteUser(1L);
+        verify(userRep, times(1)).deleteById(1L);
     }
+
 
     // Негативные тесты
 
@@ -107,26 +120,26 @@ class UserServiceImplementationTest {
 
     @Test
     void findUserById_UserNotFound_ThrowsRecordNotFoundException() {
-        when(userRep.findUserById(2L)).thenReturn(Optional.empty());
+        when(userRep.findById(2L)).thenReturn(Optional.empty());
 
         RecordNotFoundException ex = assertThrows(RecordNotFoundException.class, () -> {
             userService.findUserById(2L);
         });
 
         assertTrue(ex.getMessage().contains("User 2 not found"));
-        verify(userRep, times(1)).findUserById(2L);
+        verify(userRep, times(1)).findById(2L);
     }
 
     @Test
     void loginUser_EmailNotFound_ThrowsRecordNotFoundException() {
-        when(userRep.findByEmail("unknown@example.com")).thenReturn(Optional.empty());
+        when(userRep.findByEmailIgnoreCase("unknown@example.com")).thenReturn(Optional.empty());
 
         RecordNotFoundException ex = assertThrows(RecordNotFoundException.class, () -> {
             userService.loginUser("unknown@example.com");
         });
 
         assertTrue(ex.getMessage().contains("User with email 'unknown@example.com' not found."));
-        verify(userRep, times(1)).findByEmail("unknown@example.com");
+        verify(userRep, times(1)).findByEmailIgnoreCase("unknown@example.com");
     }
 
     @Test
@@ -139,6 +152,6 @@ class UserServiceImplementationTest {
 
         assertTrue(ex.getMessage().contains("User with id 5 not found"));
         verify(userRep, times(1)).existsById(5L);
-        verify(userRep, never()).deleteUser(anyLong());
+        verify(userRep, never()).deleteById(anyLong());
     }
 }

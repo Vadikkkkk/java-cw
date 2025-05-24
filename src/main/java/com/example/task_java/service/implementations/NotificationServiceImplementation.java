@@ -7,6 +7,7 @@ import com.example.task_java.repository.NotificationRep;
 import com.example.task_java.repository.UserRep;
 import com.example.task_java.service.NotificationService;
 import lombok.AllArgsConstructor;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -29,13 +30,13 @@ public class NotificationServiceImplementation implements NotificationService {
     @Override
     public List<Notification> getAllUsersNotification(long userId) throws RecordNotFoundException {
         checkUserExists(userId);
-        return notificationRep.findNotificationsByUserId(userId);
+        return notificationRep.findByUserId(userId);
     }
 
     @Override
     public List<Notification> getUsersPendingNotifications(long userId) throws RecordNotFoundException {
         checkUserExists(userId);
-        List<Notification> pending = notificationRep.findNotificationsByUserId(userId).stream()
+        List<Notification> pending = notificationRep.findByUserId(userId).stream()
                 .filter(notification -> !notification.getIsRead())
                 .collect(Collectors.toList());
         notificationRep.markAllAsRead(userId);
@@ -52,7 +53,7 @@ public class NotificationServiceImplementation implements NotificationService {
         }
         checkUserExists(notification.getUserId());
         try {
-            return notificationRep.saveNotification(notification);
+            return notificationRep.save(notification);
         } catch (DoubleRecordException e) {
             throw new RuntimeException(
                     "Notification already exists! " + e.getMessage(), e);

@@ -4,6 +4,7 @@ import com.example.task_java.exception.DoubleRecordException;
 import com.example.task_java.exception.RecordNotFoundException;
 import com.example.task_java.model.Notification;
 import com.example.task_java.repository.NotificationRep;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -13,13 +14,14 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 @Repository
+@Profile("inmemory")
 public class NotificationRepImplementation implements NotificationRep {
 
     private final List<Notification> notifications = new ArrayList<>();
     private static final AtomicLong idCounter = new AtomicLong();
 
     @Override
-    public Notification saveNotification(Notification notification) throws DoubleRecordException {
+    public Notification save(Notification notification) throws DoubleRecordException {
         if (notification.getNotificationId() == null) {
             notification.setNotificationId(idCounter.incrementAndGet());
             notifications.add(notification);
@@ -37,7 +39,7 @@ public class NotificationRepImplementation implements NotificationRep {
     }
 
     @Override
-    public List<Notification> findNotificationsByUserId(long userId) {
+    public List<Notification> findByUserId(long userId) {
         return notifications.stream()
                 .filter(notification -> notification.getUserId().equals(userId))
                 .collect(Collectors.toList());
