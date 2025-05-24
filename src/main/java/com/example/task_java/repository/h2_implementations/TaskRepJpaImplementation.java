@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-@Profile("h2")
+@Profile({"h2", "postgres"})
 public interface TaskRepJpaImplementation extends TaskRep, JpaRepository<Task, Long> {
     List<Task> findByUserId(Long userId);
 }
