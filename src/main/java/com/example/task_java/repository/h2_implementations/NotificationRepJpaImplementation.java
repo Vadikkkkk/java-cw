@@ -13,7 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Repository
-@Profile("h2")
+@Profile({"h2", "postgres"})
 public interface NotificationRepJpaImplementation extends NotificationRep, JpaRepository<Notification, Long>{
     List<Notification> findByUserId(long userId);
 
