@@ -1,0 +1,10 @@
+version: '3.8'
+
+services:
+  tasks-app:
+    build: .
+    container_name: task-container
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=h2
