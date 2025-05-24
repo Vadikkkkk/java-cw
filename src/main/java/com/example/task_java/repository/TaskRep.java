@@ -7,8 +7,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface TaskRep {
-    Task saveTask(Task task) throws DoubleRecordException;
-    Optional<Task> findTaskById(Long taskId);
-    List<Task> findTasksByUserId(Long userId);
-    Task updateTask(Task task);
+    Task save(Task task) throws DoubleRecordException;
+    Optional<Task> findById(Long taskId);
+    List<Task> findByUserId(Long userId);
 }

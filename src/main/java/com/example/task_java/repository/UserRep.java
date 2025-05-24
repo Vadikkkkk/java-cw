@@ -6,11 +6,11 @@ import java.util.List;
 import java.util.Optional;
 
 public interface UserRep {
-    public List<User> findAllUsers();
-    public User saveUser(User user);
-    public Optional<User> findUserById(Long userId);
-    public boolean deleteUser(long userId);
+    public List<User> findAll();
+    public User save(User user);
+    public Optional<User> findById(Long userId);
+    public void deleteById(long userId);
     public boolean existsById(long userId);
-    public boolean existsByEmail(String email);
-    public Optional<User> findByEmail(String email);
+    public boolean existsByEmailIgnoreCase(String email);
+    public Optional<User> findByEmailIgnoreCase(String email);
 }

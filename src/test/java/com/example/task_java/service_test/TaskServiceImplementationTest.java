@@ -12,7 +12,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -55,27 +54,27 @@ class TaskServiceImplementationTest {
     @Test
     void findById_UserExists_TaskFound_ReturnsTask() throws RecordNotFoundException {
         when(userRep.existsById(userId)).thenReturn(true);
-        when(taskRep.findTaskById(taskId)).thenReturn(Optional.of(sampleTask));
+        when(taskRep.findById(taskId)).thenReturn(Optional.of(sampleTask));
 
         Task task = taskService.findById(userId, taskId);
 
         assertNotNull(task);
         assertEquals(taskId, task.getTaskId());
         verify(userRep).existsById(userId);
-        verify(taskRep).findTaskById(taskId);
+        verify(taskRep).findById(taskId);
     }
 
     @Test
     void getAllByUserId_UserExists_ReturnsListOfTasks() throws RecordNotFoundException {
         when(userRep.existsById(userId)).thenReturn(true);
-        when(taskRep.findTasksByUserId(userId)).thenReturn(List.of(sampleTask));
+        when(taskRep.findByUserId(userId)).thenReturn(List.of(sampleTask));
 
         List<Task> tasks = taskService.getAllByUserId(userId);
 
         assertEquals(1, tasks.size());
         assertFalse(tasks.get(0).getIsDeleted());
         verify(userRep).existsById(userId);
-        verify(taskRep).findTasksByUserId(userId);
+        verify(taskRep).findByUserId(userId);
     }
 
     @Test
@@ -97,14 +96,14 @@ class TaskServiceImplementationTest {
                 .build();
 
         when(userRep.existsById(userId)).thenReturn(true);
-        when(taskRep.findTasksByUserId(userId)).thenReturn(List.of(pendingTask, completedTask));
+        when(taskRep.findByUserId(userId)).thenReturn(List.of(pendingTask, completedTask));
 
         List<Task> pendingTasks = taskService.getPendingTasksByUserId(userId);
 
         assertEquals(1, pendingTasks.size());
         assertFalse(pendingTasks.get(0).getIsComplete());
         verify(userRep).existsById(userId);
-        verify(taskRep).findTasksByUserId(userId);
+        verify(taskRep).findByUserId(userId);
     }
 
     @Test
@@ -115,7 +114,7 @@ class TaskServiceImplementationTest {
                 .build();
 
         when(userRep.existsById(userId)).thenReturn(true);
-        when(taskRep.saveTask(any(Task.class))).thenAnswer(invocation -> {
+        when(taskRep.save(any(Task.class))).thenAnswer(invocation -> {
             Task arg = invocation.getArgument(0);
             arg.setTaskId(100L);
             return arg;
@@ -135,20 +134,20 @@ class TaskServiceImplementationTest {
         assertEquals(userId, sentNotification.getUserId());
 
         verify(userRep).existsById(userId);
-        verify(taskRep).saveTask(any(Task.class));
+        verify(taskRep).save(any(Task.class));
     }
 
     @Test
     void deleteTask_UserAndTaskExist_TaskIsDeleted() throws RecordNotFoundException {
         when(userRep.existsById(userId)).thenReturn(true);
-        when(taskRep.findTaskById(taskId)).thenReturn(Optional.of(sampleTask));
+        when(taskRep.findById(taskId)).thenReturn(Optional.of(sampleTask));
         when(taskRep.updateTask(any(Task.class))).thenReturn(sampleTask);
 
         assertDoesNotThrow(() -> taskService.deleteTask(userId, taskId));
 
         assertTrue(sampleTask.getIsDeleted());
         verify(userRep, times(2)).existsById(userId);
-        verify(taskRep).findTaskById(taskId);
+        verify(taskRep).findById(taskId);
         verify(taskRep).updateTask(sampleTask);
     }
 
@@ -163,20 +162,20 @@ class TaskServiceImplementationTest {
 
         assertTrue(ex.getMessage().contains("User " + userId + " not found"));
         verify(userRep).existsById(userId);
-        verify(taskRep, never()).findTaskById(anyLong());
+        verify(taskRep, never()).findById(anyLong());
     }
 
     @Test
     void findById_TaskNotFound_ThrowsRecordNotFoundException() {
         when(userRep.existsById(userId)).thenReturn(true);
-        when(taskRep.findTaskById(taskId)).thenReturn(Optional.empty());
+        when(taskRep.findById(taskId)).thenReturn(Optional.empty());
 
         RecordNotFoundException ex = assertThrows(RecordNotFoundException.class,
                 () -> taskService.findById(userId, taskId));
 
         assertTrue(ex.getMessage().contains("Task " + taskId + " not found"));
         verify(userRep).existsById(userId);
-        verify(taskRep).findTaskById(taskId);
+        verify(taskRep).findById(taskId);
     }
 
     @Test
@@ -225,7 +224,7 @@ class TaskServiceImplementationTest {
 
         assertTrue(ex.getMessage().contains("User " + userId + " not found"));
         verify(userRep).existsById(userId);
-        verify(taskRep, never()).findTaskById(anyLong());
+        verify(taskRep, never()).findById(anyLong());
     }
 
     @Test
@@ -234,7 +233,7 @@ class TaskServiceImplementationTest {
         long taskId = 123L;
 
         when(userRep.existsById(userId)).thenReturn(true);
-        when(taskRep.findTaskById(taskId)).thenReturn(Optional.empty());
+        when(taskRep.findById(taskId)).thenReturn(Optional.empty());
 
         RecordNotFoundException exception = assertThrows(RecordNotFoundException.class, () -> {
             taskService.deleteTask(userId, taskId);
@@ -242,7 +241,7 @@ class TaskServiceImplementationTest {
 
         assertEquals("Task 123 not found.", exception.getMessage());
         verify(userRep, times(2)).existsById(userId); // 1 раз в deleteTask, 1 раз во findById
-        verify(taskRep).findTaskById(taskId);
+        verify(taskRep).findById(taskId);
         verify(taskRep, never()).updateTask(any());
     }
 

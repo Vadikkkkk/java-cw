@@ -35,17 +35,17 @@ class NotificationRepImplementationTest {
     // Позитивные тесты
 
     @Test
-    void saveNotification_NewNotification_AssignsIdAndSaves() throws DoubleRecordException {
-        Notification saved = notificationRepo.saveNotification(sampleNotification);
+    void saveNotification_New_AssignsIdAndSaves() throws DoubleRecordException {
+        Notification saved = notificationRepo.save(sampleNotification);
         assertNotNull(saved.getNotificationId());
-        List<Notification> notifications = notificationRepo.findNotificationsByUserId(1L);
+        List<Notification> notifications = notificationRepo.findByUserId(1L);
         assertEquals(1, notifications.size());
         assertEquals("Test notification", notifications.get(0).getText());
     }
 
     @Test
-    void saveNotification_UpdateExistingNotification_UpdatesSuccessfully() throws DoubleRecordException {
-        Notification saved = notificationRepo.saveNotification(sampleNotification);
+    void saveNotification_UpdateExisting_UpdatesSuccessfully() throws DoubleRecordException {
+        Notification saved = notificationRepo.save(sampleNotification);
         Notification updated = Notification.builder()
                 .notificationId(saved.getNotificationId())
                 .taskId(saved.getTaskId())
@@ -55,18 +55,18 @@ class NotificationRepImplementationTest {
                 .isRead(true)
                 .build();
 
-        Notification result = notificationRepo.saveNotification(updated);
+        Notification result = notificationRepo.save(updated);
         assertEquals(saved.getNotificationId(), result.getNotificationId());
         assertEquals("Updated text", result.getText());
 
-        List<Notification> notifications = notificationRepo.findNotificationsByUserId(1L);
+        List<Notification> notifications = notificationRepo.findByUserId(1L);
         assertEquals(1, notifications.size());
         assertTrue(notifications.get(0).getIsRead());
     }
 
     @Test
-    void findNotificationsByUserId_ReturnsOnlyUserNotifications() throws DoubleRecordException {
-        notificationRepo.saveNotification(sampleNotification);
+    void findNotificationsByUserId_ReturnsOnlyUser() throws DoubleRecordException {
+        notificationRepo.save(sampleNotification);
         Notification otherUserNotification = Notification.builder()
                 .taskId(2L)
                 .userId(2L)
@@ -74,10 +74,10 @@ class NotificationRepImplementationTest {
                 .date(LocalDateTime.now())
                 .isRead(false)
                 .build();
-        notificationRepo.saveNotification(otherUserNotification);
+        notificationRepo.save(otherUserNotification);
 
-        List<Notification> user1Notifications = notificationRepo.findNotificationsByUserId(1L);
-        List<Notification> user2Notifications = notificationRepo.findNotificationsByUserId(2L);
+        List<Notification> user1Notifications = notificationRepo.findByUserId(1L);
+        List<Notification> user2Notifications = notificationRepo.findByUserId(2L);
 
         assertEquals(1, user1Notifications.size());
         assertEquals(1, user2Notifications.size());
@@ -87,17 +87,17 @@ class NotificationRepImplementationTest {
 
     @Test
     void markAllAsRead_WithExistingNotifications_MarksThemAsRead() throws DoubleRecordException, RecordNotFoundException {
-        notificationRepo.saveNotification(sampleNotification);
+        notificationRepo.save(sampleNotification);
         notificationRepo.markAllAsRead(1L);
 
-        List<Notification> notifications = notificationRepo.findNotificationsByUserId(1L);
+        List<Notification> notifications = notificationRepo.findByUserId(1L);
         assertTrue(notifications.stream().allMatch(Notification::getIsRead));
     }
 
     // Негативные тесты
 
     @Test
-    void saveNotification_UpdateNonExistingNotification_ThrowsIllegalArgumentException() {
+    void saveNotification_UpdateNonExisting_ThrowsIllegalArgumentException() {
         Notification nonExistingNotification = Notification.builder()
                 .notificationId(999L)
                 .taskId(1L)
@@ -108,7 +108,7 @@ class NotificationRepImplementationTest {
                 .build();
 
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> {
-            notificationRepo.saveNotification(nonExistingNotification);
+            notificationRepo.save(nonExistingNotification);
         });
 
         assertTrue(ex.getMessage().contains("cannot update non-existing notification"));

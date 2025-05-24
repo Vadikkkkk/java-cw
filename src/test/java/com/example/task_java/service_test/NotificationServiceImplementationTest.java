@@ -35,13 +35,13 @@ public class NotificationServiceImplementationTest {
         List<Notification> notifications = List.of(new Notification(1L, 1L, userId, "Test", LocalDateTime.now(), false));
 
         when(userRep.existsById(userId)).thenReturn(true);
-        when(notificationRep.findNotificationsByUserId(userId)).thenReturn(notifications);
+        when(notificationRep.findByUserId(userId)).thenReturn(notifications);
 
         List<Notification> result = notificationService.getAllUsersNotification(userId);
 
         assertEquals(notifications, result);
         verify(userRep).existsById(userId);
-        verify(notificationRep).findNotificationsByUserId(userId);
+        verify(notificationRep).findByUserId(userId);
     }
 
     @Test
@@ -59,7 +59,7 @@ public class NotificationServiceImplementationTest {
         Notification n2 = new Notification(2L, 1L, userId, "Read", LocalDateTime.now(), true);
 
         when(userRep.existsById(userId)).thenReturn(true);
-        when(notificationRep.findNotificationsByUserId(userId)).thenReturn(Arrays.asList(n1, n2));
+        when(notificationRep.findByUserId(userId)).thenReturn(Arrays.asList(n1, n2));
 
         List<Notification> result = notificationService.getUsersPendingNotifications(userId);
 
@@ -81,12 +81,12 @@ public class NotificationServiceImplementationTest {
         Notification notification = new Notification(null, 1L, 1L, "Test", LocalDateTime.now(), false);
 
         when(userRep.existsById(1L)).thenReturn(true);
-        when(notificationRep.saveNotification(notification)).thenReturn(notification);
+        when(notificationRep.save(notification)).thenReturn(notification);
 
         Notification result = notificationService.addNotification(notification);
 
         assertEquals(notification, result);
-        verify(notificationRep).saveNotification(notification);
+        verify(notificationRep).save(notification);
     }
 
     @Test
@@ -107,7 +107,7 @@ public class NotificationServiceImplementationTest {
         Notification notification = new Notification(null, 1L, 1L, "Test", LocalDateTime.now(), false);
 
         when(userRep.existsById(1L)).thenReturn(true);
-        when(notificationRep.saveNotification(notification)).thenThrow(new DoubleRecordException("Duplicate"));
+        when(notificationRep.save(notification)).thenThrow(new DoubleRecordException("Duplicate"));
 
         RuntimeException ex = assertThrows(RuntimeException.class, () -> notificationService.addNotification(notification));
         assertTrue(ex.getMessage().contains("Notification already exists!"));

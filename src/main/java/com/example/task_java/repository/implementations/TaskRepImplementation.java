@@ -3,6 +3,7 @@ package com.example.task_java.repository.implementations;
 import com.example.task_java.exception.DoubleRecordException;
 import com.example.task_java.model.Task;
 import com.example.task_java.repository.TaskRep;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
@@ -12,13 +13,14 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 @Repository
+@Profile("inmemory")
 public class TaskRepImplementation implements TaskRep {
 
     private final List<Task> tasks = new ArrayList<>();
     private static final AtomicLong idCounter = new AtomicLong();
 
     @Override
-    public Task saveTask(Task task) throws DoubleRecordException {
+    public Task save(Task task) throws DoubleRecordException {
         if (task == null) {
             throw new IllegalArgumentException("Invalid Task!");
         }
@@ -41,7 +43,7 @@ public class TaskRepImplementation implements TaskRep {
     }
 
     @Override
-    public Optional<Task> findTaskById(Long taskId) {
+    public Optional<Task> findById(Long taskId) {
         return tasks.stream()
                 .filter(task -> task.getTaskId().equals(taskId)
                         && !task.getIsDeleted())
@@ -49,28 +51,10 @@ public class TaskRepImplementation implements TaskRep {
     }
 
     @Override
-    public List<Task> findTasksByUserId(Long userId) {
+    public List<Task> findByUserId(Long userId) {
         return tasks.stream()
                 .filter(task -> task.getUserId().equals(userId)
                         && !task.getIsDeleted())
                 .toList();
-    }
-
-    @Override
-    public Task updateTask(Task task) {
-        if (task == null || task.getTaskId() == null) {
-            throw new IllegalArgumentException("Invalid Task");
-        }
-        Optional<Task> existingTask = tasks.stream()
-                .filter(t -> t.getTaskId().equals(task.getTaskId()))
-                .findFirst();
-
-        if (existingTask.isPresent()) {
-            tasks.removeIf(t -> t.getTaskId().equals(task.getTaskId()));
-            tasks.add(task);
-            return task;
-        }
-        throw new IllegalArgumentException(
-                "Task " + task.getTaskId() + " not found.");
     }
 }

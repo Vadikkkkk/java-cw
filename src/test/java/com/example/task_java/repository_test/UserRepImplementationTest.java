@@ -1,6 +1,7 @@
 package com.example.task_java.repository_test;
 
 import com.example.task_java.exception.DoubleRecordException;
+import com.example.task_java.exception.RecordNotFoundException;
 import com.example.task_java.model.User;
 import com.example.task_java.repository.implementations.UserRepImplementation;
 import org.junit.jupiter.api.BeforeEach;
@@ -21,89 +22,111 @@ class UserRepImplementationTest {
     }
 
     @Test
-    void saveUser_ShouldAssignIdAndSaveUser() {
+    void saveUser_ShouldAssignIdAndSave() {
         User user = User.builder()
                 .email("test@example.com")
                 .build();
 
-        User savedUser = userRep.saveUser(user);
+        User savedUser = userRep.save(user);
 
         assertNotNull(savedUser.getUserId());
         assertEquals("test@example.com", savedUser.getEmail());
 
-        List<User> allUsers = userRep.findAllUsers();
+        List<User> allUsers = userRep.findAll();
         assertEquals(1, allUsers.size());
         assertEquals(savedUser, allUsers.get(0));
     }
 
     @Test
-    void saveUser_NullUser_ThrowsIllegalArgumentException() {
+    void saveUser_Null_ThrowsIllegalArgumentException() {
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> {
-            userRep.saveUser(null);
+            userRep.save(null);
         });
         assertEquals("User can't be null", ex.getMessage());
     }
 
     @Test
-    void saveUser_DuplicateEmail_ThrowsDoubleRecordException() {
+    void save_DuplicateEmail_ThrowsDoubleRecordException() {
         User user1 = User.builder()
                 .email("dup@example.com")
                 .build();
-        userRep.saveUser(user1);
+        userRep.save(user1);
 
         User user2 = User.builder()
                 .email("DUP@example.com") // проверка игнорирования регистра
                 .build();
 
         DoubleRecordException ex = assertThrows(DoubleRecordException.class, () -> {
-            userRep.saveUser(user2);
+            userRep.save(user2);
         });
         assertEquals("User with this email already exists.", ex.getMessage());
     }
 
     @Test
-    void findUserById_ShouldReturnUserIfExists() {
+    void findUserById_ShouldReturnIfExists() {
         User user = User.builder()
                 .email("findme@example.com")
                 .build();
-        userRep.saveUser(user);
+        userRep.save(user);
 
-        Optional<User> found = userRep.findUserById(user.getUserId());
+        Optional<User> found = userRep.findById(user.getUserId());
         assertTrue(found.isPresent());
         assertEquals(user, found.get());
     }
 
     @Test
-    void findUserById_ShouldReturnEmptyIfNotFound() {
-        Optional<User> found = userRep.findUserById(999L);
+    void findById_ShouldReturnEmptyIfNotFound() {
+        Optional<User> found = userRep.findById(999L);
         assertTrue(found.isEmpty());
     }
 
     @Test
-    void deleteUser_ShouldReturnTrueIfDeleted() {
+    void deleteById_ShouldDeleteUserIfExists() {
         User user = User.builder()
                 .email("todelete@example.com")
                 .build();
-        userRep.saveUser(user);
+        userRep.save(user);
 
-        boolean deleted = userRep.deleteUser(user.getUserId());
-        assertTrue(deleted);
+        // Метод не возвращает результат, просто вызываем
+        userRep.deleteById(user.getUserId());
 
-        assertTrue(userRep.findUserById(user.getUserId()).isEmpty());
+        // Проверяем, что пользователь удалён
+        assertTrue(userRep.findById(user.getUserId()).isEmpty());
     }
 
     @Test
-    void deleteUser_ShouldReturnFalseIfNotFound() {
-        boolean deleted = userRep.deleteUser(12345L);
-        assertFalse(deleted);
+    void deleteById_ShouldThrowExceptionIfUserNotFound() {
+        // Проверяем, что при удалении несуществующего пользователя выбрасывается исключение
+        assertThrows(RecordNotFoundException.class, () -> {
+            userRep.deleteById(12345L);
+        });
     }
+
+//    @Test
+//    void deleteById_ShouldReturnTrueIfDeleted() {
+//        User user = User.builder()
+//                .email("todelete@example.com")
+//                .build();
+//        userRep.save(user);
+//
+//        boolean deleted = userRep.deleteById(user.getUserId());
+//        assertTrue(deleted);
+//
+//        assertTrue(userRep.findById(user.getUserId()).isEmpty());
+//    }
+//
+//    @Test
+//    void deleteById_ShouldReturnFalseIfNotFound() {
+//        boolean deleted = userRep.deleteById(12345L);
+//        assertFalse(deleted);
+//    }
 
     @Test
     void existsById_ShouldReturnTrueIfExists() {
         User user = User.builder()
                 .email("existsid@example.com")
                 .build();
-        userRep.saveUser(user);
+        userRep.save(user);
 
         assertTrue(userRep.existsById(user.getUserId()));
     }
@@ -114,36 +137,36 @@ class UserRepImplementationTest {
     }
 
     @Test
-    void existsByEmail_ShouldReturnTrueIfExists() {
+    void existsByEmail_ShouldReturnTrueIfExistsIgnoreCase() {
         User user = User.builder()
                 .email("existsemail@example.com")
                 .build();
-        userRep.saveUser(user);
+        userRep.save(user);
 
-        assertTrue(userRep.existsByEmail("existsemail@example.com"));
-        assertTrue(userRep.existsByEmail("EXISTSEMAIL@example.com")); // проверка регистра
+        assertTrue(userRep.existsByEmailIgnoreCase("existsemail@example.com"));
+        assertTrue(userRep.existsByEmailIgnoreCase("EXISTSEMAIL@example.com")); // проверка регистра
     }
 
     @Test
-    void existsByEmail_ShouldReturnFalseIfNotExists() {
-        assertFalse(userRep.existsByEmail("notexists@example.com"));
+    void existsByEmail_ShouldReturnFalseIfNotExistsIgnoreCase() {
+        assertFalse(userRep.existsByEmailIgnoreCase("notexists@example.com"));
     }
 
     @Test
-    void findByEmail_ShouldReturnUserIfExists() {
+    void findByEmail_IgnoreCase_ShouldReturnUserIfExists() {
         User user = User.builder()
                 .email("findbyemail@example.com")
                 .build();
-        userRep.saveUser(user);
+        userRep.save(user);
 
-        Optional<User> found = userRep.findByEmail("findbyemail@example.com");
+        Optional<User> found = userRep.findByEmailIgnoreCase("findbyemail@example.com");
         assertTrue(found.isPresent());
         assertEquals(user, found.get());
     }
 
     @Test
-    void findByEmail_ShouldReturnEmptyIfNotExists() {
-        Optional<User> found = userRep.findByEmail("missing@example.com");
+    void findByEmail_IgnoreCase_ShouldReturnEmptyIfNotExists() {
+        Optional<User> found = userRep.findByEmailIgnoreCase("missing@example.com");
         assertTrue(found.isEmpty());
     }
 }
