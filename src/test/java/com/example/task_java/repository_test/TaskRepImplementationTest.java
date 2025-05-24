@@ -76,7 +76,7 @@ class TaskRepImplementationTest {
                 .isDeleted(false)
                 .build();
 
-        Task result = taskRepo.updateTask(updated);
+        Task result = taskRepo.save(updated);
         assertEquals("Updated text", result.getTaskText());
         assertEquals(1, taskRepo.findByUserId(saved.getUserId()).size());
     }
@@ -106,47 +106,5 @@ class TaskRepImplementationTest {
             taskRepo.save(taskWithId);
         });
         assertTrue(ex.getMessage().contains("doesn't exists"));
-    }
-
-    @Test
-    void updateTask_NullTask_ThrowsIllegalArgumentException() {
-        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> {
-            taskRepo.updateTask(null);
-        });
-        assertEquals("Invalid Task", ex.getMessage());
-    }
-
-    @Test
-    void updateTask_TaskWithNullId_ThrowsIllegalArgumentException() {
-        Task taskWithoutId = Task.builder()
-                .taskId(null)
-                .userId(1L)
-                .taskText("No ID task")
-                .creationDate(LocalDateTime.now())
-                .targetDate(LocalDateTime.now().plusDays(1))
-                .isDeleted(false)
-                .build();
-
-        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> {
-            taskRepo.updateTask(taskWithoutId);
-        });
-        assertEquals("Invalid Task", ex.getMessage());
-    }
-
-    @Test
-    void updateTask_NonExistingTask_ThrowsIllegalArgumentException() {
-        Task nonExistingTask = Task.builder()
-                .taskId(999L)
-                .userId(1L)
-                .taskText("Non-existing")
-                .creationDate(LocalDateTime.now())
-                .targetDate(LocalDateTime.now().plusDays(1))
-                .isDeleted(false)
-                .build();
-
-        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> {
-            taskRepo.updateTask(nonExistingTask);
-        });
-        assertTrue(ex.getMessage().contains("not found"));
     }
 }
