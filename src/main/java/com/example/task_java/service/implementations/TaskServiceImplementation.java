@@ -2,20 +2,19 @@ package com.example.task_java.service.implementations;
 
 import com.example.task_java.exception.DoubleRecordException;
 import com.example.task_java.exception.RecordNotFoundException;
-import com.example.task_java.model.Notification;
 import com.example.task_java.model.Task;
 import com.example.task_java.repository.TaskRep;
 import com.example.task_java.repository.UserRep;
-import com.example.task_java.service.NotificationService;
 import com.example.task_java.service.TaskService;
 import lombok.AllArgsConstructor;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 
@@ -25,7 +24,9 @@ public class TaskServiceImplementation implements TaskService {
 
     private final TaskRep taskRep;
     private final UserRep userRep;
-    private final NotificationService notificationService;
+
+    private final RabbitTemplate rabbitTemplate;
+
 
     private void checkUserExists(Long userId) throws RecordNotFoundException {
         if (!userRep.existsById(userId)) {
@@ -69,20 +70,21 @@ public class TaskServiceImplementation implements TaskService {
         if (task == null || task.getTaskText().isBlank()) {
             throw new IllegalArgumentException("Invalid Task.");
         }
+
         task.setIsComplete(false);
         task.setIsDeleted(false);
+        task.setUserId(userId); // <-- важно, ты это не делал
         Task createdTask = taskRep.save(task);
-        notificationService.addNotification(new Notification(//уведомление о создании задачи
-                null,
-                task.getTaskId(),
-                userId,
-                "Задача '" + createdTask.getTaskText() + "' создана.",
-                LocalDateTime.now(),
-                false
-        ));
+
+        Map<String, Object> message = new HashMap<>();
+        message.put("userId", createdTask.getUserId());
+        message.put("taskId", createdTask.getTaskId());
+        message.put("taskText", createdTask.getTaskText());
+
+        rabbitTemplate.convertAndSend("task.exchange", "task.created", message);
+
         return createdTask;
     }
-
 
     @Override
     @CacheEvict(value = {"tasksAll", "tasksPending"}, key = "#userId")
