@@ -67,10 +67,20 @@ public class TaskConroller {
         }
     }
 
-    @DeleteMapping("/delete/{taskId}")
+    @DeleteMapping("/{taskId}/delete")
     public ResponseEntity<Void> softDeleteTask(@PathVariable Long userId, @PathVariable Long taskId) {
         try {
             taskService.deleteTask(userId, taskId);
+            return ResponseEntity.noContent().build();
+        } catch (RecordNotFoundException e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage(), e);
+        }
+    }
+
+    @PatchMapping("/{taskId}/complete")
+    public ResponseEntity<Void> completeTask(@PathVariable Long userId, @PathVariable Long taskId) {
+        try {
+            taskService.completeTask(userId, taskId);
             return ResponseEntity.noContent().build();
         } catch (RecordNotFoundException e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage(), e);

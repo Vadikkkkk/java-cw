@@ -16,6 +16,13 @@ public class RabbitMQConfig {
     public static final String TASK_QUEUE = "task.queue";
     public static final String TASK_ROUTING_KEY = "task.created";
 
+    public static final String TASK_OVERDUE_QUEUE = "task.overdue.queue";
+    public static final String TASK_OVERDUE_ROUTING_KEY = "task.overdue";
+
+    public static final String TASK_COMPLETED_QUEUE = "task.completed.queue";
+    public static final String TASK_COMPLETED_ROUTING_KEY = "task.completed";
+
+
     @Bean
     public TopicExchange exchange() {
         return new TopicExchange(TASK_EXCHANGE);
@@ -53,4 +60,29 @@ public class RabbitMQConfig {
         return rabbitTemplate;
     }
 
+    @Bean
+    public Queue overdueQueue() {
+        return new Queue(TASK_OVERDUE_QUEUE);
+    }
+
+    @Bean
+    public Binding overdueBinding() {
+        return BindingBuilder
+                .bind(overdueQueue())
+                .to(exchange())
+                .with(TASK_OVERDUE_ROUTING_KEY);
+    }
+
+    @Bean
+    public Queue completedQueue() {
+        return new Queue(TASK_COMPLETED_QUEUE);
+    }
+
+    @Bean
+    public Binding completedBinding() {
+        return BindingBuilder
+                .bind(completedQueue())
+                .to(exchange())
+                .with(TASK_COMPLETED_ROUTING_KEY);
+    }
 }

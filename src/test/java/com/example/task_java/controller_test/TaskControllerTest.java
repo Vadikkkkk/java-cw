@@ -90,7 +90,7 @@ class TaskControllerTest {
 
     @Test
     void softDeleteTask_ReturnsNoContent() throws Exception {
-        mockMvc.perform(delete("/users/1/tasks/delete/1"))
+        mockMvc.perform(delete("/users/1/tasks/1/delete"))
                 .andExpect(status().isNoContent());
     }
 
@@ -146,7 +146,7 @@ class TaskControllerTest {
         Mockito.doThrow(new RecordNotFoundException("Task not found"))
                 .when(taskService).deleteTask(1L, 99L);
 
-        mockMvc.perform(delete("/users/1/tasks/delete/99"))
+        mockMvc.perform(delete("/users/1/tasks/99/delete"))
                 .andExpect(status().isNotFound())
                 .andExpect(status().reason("Task not found"));
     }

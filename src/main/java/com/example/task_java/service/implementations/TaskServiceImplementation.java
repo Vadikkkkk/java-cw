@@ -73,7 +73,7 @@ public class TaskServiceImplementation implements TaskService {
 
         task.setIsComplete(false);
         task.setIsDeleted(false);
-        task.setUserId(userId); // <-- важно, ты это не делал
+        task.setUserId(userId);
         Task createdTask = taskRep.save(task);
 
         Map<String, Object> message = new HashMap<>();
@@ -94,4 +94,21 @@ public class TaskServiceImplementation implements TaskService {
         task.setIsDeleted(true);
         taskRep.save(task);
     }
+
+    @Override
+    @CacheEvict(value = {"tasksAll", "tasksPending"}, key = "#userId")
+    public void completeTask(long userId, long taskId) throws RecordNotFoundException {
+        checkUserExists(userId);
+        Task task = findById(userId, taskId);
+        task.setIsComplete(true);
+        taskRep.save(task);
+
+        Map<String, Object> message = new HashMap<>();
+        message.put("userId", task.getUserId());
+        message.put("taskId", task.getTaskId());
+        message.put("taskText", task.getTaskText());
+
+        rabbitTemplate.convertAndSend("task.exchange", "task.completed", message);
+    }
+
 }

@@ -15,4 +15,5 @@ public interface TaskService {
     public List<Task> getPendingTasksByUserId(long userId) throws RecordNotFoundException;
     public Task createForUserId(long userId, Task task) throws RecordNotFoundException, DoubleRecordException;
     public void deleteTask(long userId, long taskId) throws RecordNotFoundException;
+    public void completeTask(long userId, long taskId) throws RecordNotFoundException;
 }

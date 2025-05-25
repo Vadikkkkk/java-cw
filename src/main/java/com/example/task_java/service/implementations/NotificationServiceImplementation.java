@@ -7,7 +7,6 @@ import com.example.task_java.repository.NotificationRep;
 import com.example.task_java.repository.UserRep;
 import com.example.task_java.service.NotificationService;
 import lombok.AllArgsConstructor;
-import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
