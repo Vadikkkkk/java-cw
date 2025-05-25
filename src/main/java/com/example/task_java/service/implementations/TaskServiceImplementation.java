@@ -9,6 +9,8 @@ import com.example.task_java.repository.UserRep;
 import com.example.task_java.service.NotificationService;
 import com.example.task_java.service.TaskService;
 import lombok.AllArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
@@ -41,7 +43,9 @@ public class TaskServiceImplementation implements TaskService {
     }
 
     @Override
+    @Cacheable(value = "tasksAll", key = "#userId")
     public List<Task> getAllByUserId(long userId) throws RecordNotFoundException {
+        System.out.println("Loading tasks from DB for user: " + userId);
         checkUserExists(userId);
         return taskRep.findByUserId(userId).stream()
                 .filter(task -> !task.getIsDeleted())
@@ -49,7 +53,9 @@ public class TaskServiceImplementation implements TaskService {
     }
 
     @Override
+    @Cacheable(value = "tasksPending", key = "#userId")
     public List<Task> getPendingTasksByUserId(long userId) throws RecordNotFoundException {
+        System.out.println("Loading tasks from DB for user: " + userId);
         checkUserExists(userId);
         return taskRep.findByUserId(userId).stream()
                 .filter(task -> !task.getIsDeleted() && !task.getIsComplete())
@@ -57,6 +63,7 @@ public class TaskServiceImplementation implements TaskService {
     }
 
     @Override
+    @CacheEvict(value = {"tasksAll", "tasksPending"}, key = "#userId")
     public Task createForUserId(long userId, Task task) throws RecordNotFoundException, DoubleRecordException {
         checkUserExists(userId);
         if (task == null || task.getTaskText().isBlank()) {
@@ -76,7 +83,9 @@ public class TaskServiceImplementation implements TaskService {
         return createdTask;
     }
 
+
     @Override
+    @CacheEvict(value = {"tasksAll", "tasksPending"}, key = "#userId")
     public void deleteTask(long userId, long taskId) throws RecordNotFoundException {
         checkUserExists(userId);
         Task task = findById(userId, taskId);
