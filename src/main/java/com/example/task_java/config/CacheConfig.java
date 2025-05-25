@@ -37,20 +37,6 @@ public class CacheConfig {
         return new LettuceConnectionFactory(configuration);
     }
 
-//    @Bean
-//    public RedisCacheManager cacheManager(RedisConnectionFactory redisConnectionFactory) {
-//        RedisCacheConfiguration cacheConfig = RedisCacheConfiguration.defaultCacheConfig()
-//                .entryTtl(Duration.ofSeconds(timeToLive))
-//                .serializeValuesWith(
-//                        RedisSerializationContext.SerializationPair.fromSerializer(
-//                                new GenericJackson2JsonRedisSerializer())
-//                );
-//
-//        return RedisCacheManager.builder(redisConnectionFactory)
-//                .cacheDefaults(cacheConfig)
-//                .build();
-//    }
-
     @Bean
     public RedisSerializer<Object> redisSerializer() {
         ObjectMapper objectMapper = new ObjectMapper();

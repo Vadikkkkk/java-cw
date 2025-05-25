@@ -57,4 +57,11 @@ public class TaskRepImplementation implements TaskRep {
                         && !task.getIsDeleted())
                 .toList();
     }
+
+    @Override
+    public List<Task> findByIsDeletedFalseAndIsCompleteFalse() {
+        return tasks.stream()
+                .filter(task -> !task.getIsDeleted() && !task.getIsComplete())
+                .collect(Collectors.toList());
+    }
 }

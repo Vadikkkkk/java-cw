@@ -10,4 +10,5 @@ public interface TaskRep {
     Task save(Task task) throws DoubleRecordException;
     Optional<Task> findById(Long taskId);
     List<Task> findByUserId(Long userId);
+    List<Task> findByIsDeletedFalseAndIsCompleteFalse();
 }

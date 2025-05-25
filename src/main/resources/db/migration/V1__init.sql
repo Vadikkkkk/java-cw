@@ -13,6 +13,7 @@ CREATE TABLE tasks (
     task_text VARCHAR(255) NOT NULL,
     is_complete BOOLEAN,
     is_deleted BOOLEAN,
+    is_overdue_notified BOOLEAN,
     creation_date TIMESTAMP,
     target_date TIMESTAMP
 );

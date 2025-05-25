@@ -36,4 +36,8 @@ public class Task {
     @NonNull
     @Builder.Default
     private Boolean isDeleted = false;
+
+    @NonNull
+    @Builder.Default
+    private Boolean isOverdueNotified = false;
 }
