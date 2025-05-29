@@ -117,6 +117,8 @@ class TaskServiceImplementationTest {
         when(taskRep.save(any(Task.class))).thenAnswer(invocation -> {
             Task arg = invocation.getArgument(0);
             arg.setTaskId(100L);
+            arg.setIsComplete(false);
+            arg.setIsDeleted(false);
             return arg;
         });
 
@@ -138,17 +140,17 @@ class TaskServiceImplementationTest {
     }
 
     @Test
-    void deleteTask_UserAndTaskExist_TaskIsDeleted() throws RecordNotFoundException {
+    void deleteTask_UserAndTaskExist_TaskIsDeleted() throws RecordNotFoundException, DoubleRecordException {
         when(userRep.existsById(userId)).thenReturn(true);
         when(taskRep.findById(taskId)).thenReturn(Optional.of(sampleTask));
-        when(taskRep.updateTask(any(Task.class))).thenReturn(sampleTask);
+        when(taskRep.save(any(Task.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         assertDoesNotThrow(() -> taskService.deleteTask(userId, taskId));
 
         assertTrue(sampleTask.getIsDeleted());
         verify(userRep, times(2)).existsById(userId);
         verify(taskRep).findById(taskId);
-        verify(taskRep).updateTask(sampleTask);
+        verify(taskRep).save(sampleTask);
     }
 
     // Негативные тесты
@@ -191,11 +193,10 @@ class TaskServiceImplementationTest {
         });
 
         assertEquals("User 1 not found.", exception.getMessage());
-        verify(userRep, times(1)).existsById(userId); // вызывался только один раз
+        verify(userRep, times(1)).existsById(userId);
         verifyNoInteractions(taskRep);
         verifyNoInteractions(notificationService);
     }
-
 
     @Test
     void createForUserId_NullOrBlankTask_ThrowsIllegalArgumentException() throws RecordNotFoundException {
@@ -242,7 +243,6 @@ class TaskServiceImplementationTest {
         assertEquals("Task 123 not found.", exception.getMessage());
         verify(userRep, times(2)).existsById(userId); // 1 раз в deleteTask, 1 раз во findById
         verify(taskRep).findById(taskId);
-        verify(taskRep, never()).updateTask(any());
+        verify(taskRep, never()).save(any());
     }
-
 }
